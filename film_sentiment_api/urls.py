@@ -20,10 +20,14 @@ from rest_framework.routers import DefaultRouter # <-- 1. Impor Router
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from apps.films.views import FilmViewSet # <-- 2. Impor ViewSet Film
+from apps.comments.views import CommentViewSet # <-- Impor ViewSet Comment
+from apps.thumbs.views import ThumbViewSet # <-- Impor ViewSet Thumb
 
 # 3. Buat router
 router = DefaultRouter()
 router.register(r'films', FilmViewSet, basename='film') # Daftarkan /films/
+router.register(r'comments', CommentViewSet, basename='comment') # Daftarkan /comments/
+router.register(r'thumbs', ThumbViewSet, basename='thumb') # Daftarkan /thumbs/
 
 urlpatterns = [
     path('admin/', admin.site.urls),
