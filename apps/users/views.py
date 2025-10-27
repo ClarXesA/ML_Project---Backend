@@ -2,8 +2,15 @@ from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+# Impor view token bawaan
+from rest_framework_simplejwt.views import TokenObtainPairView 
 
-from .serializers import UserRegistrationSerializer, UserSerializer
+# Impor serializer, termasuk serializer kustom baru
+from .serializers import (
+    UserRegistrationSerializer, 
+    UserSerializer,
+    MyTokenObtainPairSerializer # <-- 1. Impor serializer kustom
+)
 from .models import User
 
 class UserRegisterView(generics.CreateAPIView):
@@ -20,6 +27,15 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         # Selalu kembalikan profil user yang sedang login
         return self.request.user
+
+# --- TAMBAHAN BARU ---
+class MyTokenObtainPairView(TokenObtainPairView):
+    """
+    View login kustom yang menggunakan serializer kustom kita
+    untuk menambahkan data user ke token.
+    """
+    serializer_class = MyTokenObtainPairSerializer
+# --- AKHIR TAMBAHAN ---
 
 class LogoutView(APIView):
     """View untuk logout (blacklist refresh token)."""

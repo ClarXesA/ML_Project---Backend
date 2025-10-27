@@ -1,33 +1,21 @@
-"""
-URL configuration for film_sentiment_api project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter # <-- 1. Impor Router
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework.routers import DefaultRouter
 
-from apps.films.views import FilmViewSet # <-- 2. Impor ViewSet Film
-from apps.comments.views import CommentViewSet # <-- Impor ViewSet Comment
-from apps.thumbs.views import ThumbViewSet # <-- Impor ViewSet Thumb
+# Hapus TokenObtainPairView bawaan dari sini
+from rest_framework_simplejwt.views import TokenRefreshView 
+# Impor View login kustom Anda
+from apps.users.views import MyTokenObtainPairView 
 
-# 3. Buat router
+from apps.films.views import FilmViewSet
+from apps.comments.views import CommentViewSet
+from apps.thumbs.views import ThumbViewSet
+
+# Buat router
 router = DefaultRouter()
-router.register(r'films', FilmViewSet, basename='film') # Daftarkan /films/
-router.register(r'comments', CommentViewSet, basename='comment') # Daftarkan /comments/
-router.register(r'thumbs', ThumbViewSet, basename='thumb') # Daftarkan /thumbs/
+router.register(r'films', FilmViewSet, basename='film')
+router.register(r'comments', CommentViewSet, basename='comment')
+router.register(r'thumbs', ThumbViewSet, basename='thumb')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -36,9 +24,10 @@ urlpatterns = [
     path('api/users/', include('apps.users.urls')),
 
     # URL API untuk Login (JWT)
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # VVV GUNAKAN VIEW KUSTOM ANDA DI SINI VVV
+    path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
-    # 4. Daftarkan semua URL dari router ke /api/
+    # Daftarkan semua URL dari router ke /api/
     path('api/', include(router.urls)),
 ]

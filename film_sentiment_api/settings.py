@@ -4,6 +4,7 @@ Django settings for film_sentiment_api project.
 
 from pathlib import Path
 import os  # <-- TAMBAHKAN INI
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -134,3 +135,11 @@ REST_FRAMEWORK = {
 # Pengaturan CORS - izinkan semua asal untuk pengembangan
 CORS_ALLOW_ALL_ORIGINS = True   
 CORS_ALLOW_CREDENTIALS = True
+
+# Pengaturan JWT untuk token yang aman (bukan 30 hari)
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1), # (Default) Dibuat singkat agar aman
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30), # Refresh token berlaku 30 hari
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True, # Mengaktifkan blacklist untuk logout
+}
