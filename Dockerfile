@@ -9,4 +9,8 @@ COPY requirements.txt /app/
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
+# --- TAMBAHAN UNTUK NLTK ---
+RUN python -m nltk.downloader stopwords
+# --- AKHIR TAMBAHAN ---
+
 COPY . /app/
