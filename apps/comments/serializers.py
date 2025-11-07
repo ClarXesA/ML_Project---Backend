@@ -1,32 +1,42 @@
 from rest_framework import serializers
 from .models import Comment
-from .ml_predictor import predict_sentiment # <-- Impor placeholder ML kita
+# Impor 3 fungsi spesifik dari ml_predictor
+from .ml_predictor import translate_to_english, preprocess_text, predict_sentiment_from_processed
 
 class CommentSerializer(serializers.ModelSerializer):
-    # Tampilkan 'fullname' user, bukan cuma ID-nya
     user = serializers.StringRelatedField(read_only=True)
+    # Tampilkan field baru di respons API
+    translated_comment = serializers.CharField(read_only=True) 
 
     class Meta:
         model = Comment
-        # Tentukan field yang akan dipakai
-        fields = ('id', 'film', 'user', 'comment', 'is_good', 'created_at')
-        
-        # Field ini tidak boleh diisi manual oleh user
-        read_only_fields = ('user', 'is_good', 'created_at')
+        # Tambahkan 'translated_comment' ke daftar fields
+        fields = ('id', 'film', 'user', 'comment', 'translated_comment', 'is_good', 'created_at')
+        read_only_fields = ('user', 'is_good', 'created_at', 'translated_comment')
 
     def create(self, validated_data):
-        """
-        Timpa metode create standar.
-        """
-        # 1. Ambil teks komentar dari data yang sudah divalidasi
-        comment_text = validated_data.get('comment')
+        original_text = validated_data.get('comment')
         
-        # 2. Panggil fungsi model ML kita
-        sentiment_result = predict_sentiment(comment_text)
+        # 1. Terjemahkan
+        translated_text = translate_to_english(original_text)
         
-        # 3. Tambahkan hasil prediksi ke dalam data
-        validated_data['is_good'] = sentiment_result
+        # 2. Preprocess
+        processed_text = preprocess_text(translated_text)
         
-        # 4. Simpan komentar ke database
-        comment = Comment.objects.create(**validated_data)
-        return comment
+        # 3. Prediksi
+        sentiment_result = predict_sentiment_from_processed(processed_text)
+        
+        # Tentukan apa yang akan disimpan di field terjemahan
+        translated_to_store = None
+        if original_text.lower() != translated_text.lower():
+            # Hanya simpan jika teksnya benar-benar diterjemahkan
+            translated_to_store = translated_text
+
+        # 4. Simpan semuanya ke database
+        comment_instance = Comment.objects.create(
+            **validated_data, # (Berisi film, user, dan 'comment' asli)
+            is_good = sentiment_result,
+            translated_comment = translated_to_store # Simpan hasil terjemahan
+        )
+        
+        return comment_instance

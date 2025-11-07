@@ -4,10 +4,10 @@ import nltk
 from nltk.corpus import stopwords
 import os
 from django.conf import settings
-from googletrans import Translator # <-- Impor Translator
-from .apps import CommentsConfig # <-- Impor model yang sudah dimuat
+from googletrans import Translator
+from .apps import CommentsConfig
 
-# --- Fungsi Preprocessing (Tetap Sama) ---
+# --- Fungsi Preprocessing ---
 def preprocess_text(text):
     text = text.lower()
     text = re.sub(r'[^a-zA-Z\s]', '', text)
@@ -19,10 +19,10 @@ def preprocess_text(text):
     words = [word for word in words if word not in stop_words]
     return ' '.join(words)
 
-# --- Instansiasi Translator (di luar fungsi agar efisien) ---
+# --- Instansiasi Translator ---
 translator = Translator()
 
-# --- FUNGSI BARU UNTUK TERJEMAHAN ---
+# --- Fungsi Terjemahan ---
 def translate_to_english(text: str) -> str:
     """
     Mendeteksi bahasa teks dan menerjemahkannya ke Bahasa Inggris 
@@ -43,28 +43,20 @@ def translate_to_english(text: str) -> str:
         print(f"⚠️ Warning: Gagal menerjemahkan teks '{text}'. Error: {e}")
         # Jika terjemahan gagal, kembalikan teks asli saja
         return text 
-# --- AKHIR FUNGSI TERJEMAHAN ---
 
-
-def predict_sentiment(text: str) -> bool | None:
+# --- Fungsi Prediksi ---
+def predict_sentiment_from_processed(processed_text: str) -> bool | None:
     """
-    Menerjemahkan teks ke Bahasa Inggris, melakukan preprocessing, 
-    lalu memprediksi sentimen menggunakan model yang sudah dimuat.
+    HANYA melakukan prediksi dari teks yang SUDAH di-preprocess.
     """
     try:
-        # 1. Terjemahkan teks ke Bahasa Inggris
-        english_text = translate_to_english(text)
-        
-        # 2. Preprocess teks (yang sudah pasti Inggris)
-        processed_text = preprocess_text(english_text)
-        
-        # 3. Vectorize teks
+        # 1. Vectorize teks
         vectorized_text = CommentsConfig.vectorizer.transform([processed_text])
         
-        # 4. Prediksi
+        # 2. Prediksi
         prediction = CommentsConfig.model.predict(vectorized_text)[0] 
         
-        # 5. Konversi ke Boolean (True=Positif, False=Negatif)
+        # 3. Konversi ke Boolean
         return prediction.upper() == 'POSITIVE'
 
     except Exception as e:
