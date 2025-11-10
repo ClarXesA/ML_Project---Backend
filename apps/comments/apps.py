@@ -12,9 +12,11 @@ class CommentsConfig(AppConfig):
     # settings.BASE_DIR menunjuk ke /app
     model_path = os.path.join(settings.BASE_DIR, 'models', 'sentiment_model.joblib')
     vectorizer_path = os.path.join(settings.BASE_DIR, 'models', 'tfidf_vectorizer.joblib')
+    selector_path = os.path.join(settings.BASE_DIR, 'models', 'feature_selector.joblib')
 
     model = None
     vectorizer = None
+    selector = None
 
     def ready(self):
         """Kode ini dijalankan saat Django siap."""
@@ -22,6 +24,8 @@ class CommentsConfig(AppConfig):
         try:
             CommentsConfig.model = joblib.load(CommentsConfig.model_path)
             CommentsConfig.vectorizer = joblib.load(CommentsConfig.vectorizer_path)
+            CommentsConfig.selector = joblib.load(CommentsConfig.vectorizer_path)
+
             print("✅ Model dan vectorizer berhasil dimuat.")
             
             # Download NLTK data jika belum ada
