@@ -81,19 +81,33 @@ def translate_to_english(text: str) -> str:
 def predict_sentiment_from_processed(processed_text: str) -> bool | None:
     """
     HANYA melakukan prediksi dari teks yang SUDAH di-preprocess.
+    Mengembalikan True untuk 'POSITIVE', False untuk 'NEGATIVE', atau None jika ada error/neutral.
     """
+    if not processed_text:
+        # Menghindari error jika input kosong setelah preprocessing
+        return None 
+        
     try:
         # 1. Vectorize teks
+        # Pastikan input adalah list/iterable meskipun hanya satu item
         vectorized_text = CommentsConfig.vectorizer.transform([processed_text])
 
-            # 3. Pilih fitur menggunakan selector <-- TAMBAHKAN INI
+        # 2. Pilih fitur menggunakan selector (WAJIB menggunakan selector yang sudah di-fit)
         selected_text = CommentsConfig.selector.transform(vectorized_text)
         
-        # 2. Prediksi
-        prediction = CommentsConfig.model.predict(selected_text)[0] 
+        # 3. Prediksi (mengembalikan array, ambil elemen pertama)
+        prediction = CommentsConfig.model.predict(selected_text)
+
+        print(prediction)
         
-        # 3. Konversi ke Boolean
-        return prediction.upper() == 'POSITIVE'
+        # 4. Konversi ke Boolean
+        if prediction == 'positive':
+            return True
+        elif prediction == 'negative':
+            return False
+        else:
+            # Jika kelasnya 'NEUTRAL' atau kelas lain yang tidak di mapping
+            return None 
 
     except Exception as e:
         print(f"❌ Error predicting sentiment: {e}")
